@@ -6,14 +6,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
-import fitz
 from PIL import Image
 
-from config import PAGE_RENDER_DPI
-from utils.pdf_pages import (
-    extract_page_text_hybrid,
-    render_page_image_fitz,
-)
+from utils.pdf_pages import extract_pages_from_pdf
 
 
 @dataclass
@@ -46,27 +41,18 @@ def build_pdf_document(
     source = pdf_path.name
 
     if page_records is None:
-        doc = fitz.open(str(pdf_path))
-        try:
-            num_pages = doc.page_count
-        finally:
-            doc.close()
-
         page_records = []
-        for page_index in range(num_pages):
-            image = render_page_image_fitz(pdf_path, page_index)
-            text, text_source = extract_page_text_hybrid(
-                pdf_path,
-                page_index,
-                page_image=image,
-                use_ocr_fallback=use_ocr_fallback,
-            )
+        for page_data in extract_pages_from_pdf(
+            pdf_path,
+            use_ocr_fallback=use_ocr_fallback,
+            render_images=True,
+        ):
             page_records.append(
                 PageRecord(
-                    page_index=page_index,
-                    text=text,
-                    text_source=text_source,
-                    image=image,
+                    page_index=page_data["page_index"],
+                    text=page_data["text"],
+                    text_source=page_data["text_source"],
+                    image=page_data["image"],
                 )
             )
 

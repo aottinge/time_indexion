@@ -1,12 +1,17 @@
-chromadb>=1.5.0
-langchain-text-splitters>=1.1.0
-matplotlib>=3.8.0
-openpyxl>=3.1.0
-pandas>=2.0.0
-pillow>=10.0.0
+# --- Dépendances légères (PDF, chunking, rapports) ---
 pymupdf>=1.24.0
 pypdf>=4.0.0
+langchain-text-splitters>=1.1.0
+pandas>=2.0.0
+pillow>=10.0.0
+matplotlib>=3.8.0
+openpyxl>=3.1.0
+
+# --- Optionnel : OCR pour PDF scannés ---
 pytesseract>=0.3.10
+
+# --- ML : nécessaire seulement sans --skip-embeddings ---
+chromadb>=1.5.0
 sentence-transformers>=3.0.0
 torch>=2.2.0
 torchvision>=0.17.0

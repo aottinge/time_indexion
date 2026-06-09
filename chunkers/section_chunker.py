@@ -5,14 +5,11 @@ Chaque chunk est enrichi avec les images des pages PDF correspondantes.
 
 import re
 
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from transformers import AutoTokenizer
-
 from chunkers.base import BaseChunker, Chunk
+from chunkers.splitter_utils import create_recursive_splitter, estimate_tokens
 from config import (
     CHUNK_OVERLAP_TOKENS,
     CHUNK_SIZE_TOKENS,
-    JINA_MODEL,
     SECTION_MAX_TOKENS,
 )
 from utils.pdf_document import PdfDocument, attach_images_to_chunks
@@ -76,17 +73,13 @@ class SectionChunker(BaseChunker):
         max_section_tokens: int = SECTION_MAX_TOKENS,
         chunk_size_tokens: int = CHUNK_SIZE_TOKENS,
         chunk_overlap_tokens: int = CHUNK_OVERLAP_TOKENS,
-        tokenizer_model: str = JINA_MODEL,
+        use_hf_tokenizer: bool | None = None,
     ) -> None:
-        self._tokenizer = AutoTokenizer.from_pretrained(
-            tokenizer_model,
-            trust_remote_code=True,
-        )
         self.max_section_tokens = max_section_tokens
-        self._fallback_splitter = RecursiveCharacterTextSplitter.from_huggingface_tokenizer(
-            tokenizer=self._tokenizer,
-            chunk_size=chunk_size_tokens,
-            chunk_overlap=chunk_overlap_tokens,
+        self._fallback_splitter = create_recursive_splitter(
+            chunk_size_tokens=chunk_size_tokens,
+            chunk_overlap_tokens=chunk_overlap_tokens,
+            use_hf_tokenizer=use_hf_tokenizer,
         )
 
     def _split(self, documents: list) -> list[Chunk]:
@@ -107,9 +100,7 @@ class SectionChunker(BaseChunker):
             doc_chunks: list[Chunk] = []
 
             for section_title, section_content in sections:
-                section_tokens = len(
-                    self._tokenizer.encode(section_content, add_special_tokens=False)
-                )
+                section_tokens = estimate_tokens(section_content)
                 if section_tokens <= self.max_section_tokens:
                     doc_chunks.append(
                         Chunk(

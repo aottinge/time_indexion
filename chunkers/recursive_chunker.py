@@ -3,11 +3,9 @@ Chunking récursif via RecursiveCharacterTextSplitter (LangChain).
 Chaque chunk est enrichi avec les images des pages PDF correspondantes.
 """
 
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from transformers import AutoTokenizer
-
 from chunkers.base import BaseChunker, Chunk
-from config import CHUNK_OVERLAP_TOKENS, CHUNK_SIZE_TOKENS, JINA_MODEL
+from chunkers.splitter_utils import create_recursive_splitter
+from config import CHUNK_OVERLAP_TOKENS, CHUNK_SIZE_TOKENS
 from utils.pdf_document import PdfDocument, attach_images_to_chunks
 
 
@@ -20,16 +18,12 @@ class RecursiveChunker(BaseChunker):
         self,
         chunk_size_tokens: int = CHUNK_SIZE_TOKENS,
         chunk_overlap_tokens: int = CHUNK_OVERLAP_TOKENS,
-        tokenizer_model: str = JINA_MODEL,
+        use_hf_tokenizer: bool | None = None,
     ) -> None:
-        self._tokenizer = AutoTokenizer.from_pretrained(
-            tokenizer_model,
-            trust_remote_code=True,
-        )
-        self._splitter = RecursiveCharacterTextSplitter.from_huggingface_tokenizer(
-            tokenizer=self._tokenizer,
-            chunk_size=chunk_size_tokens,
-            chunk_overlap=chunk_overlap_tokens,
+        self._splitter = create_recursive_splitter(
+            chunk_size_tokens=chunk_size_tokens,
+            chunk_overlap_tokens=chunk_overlap_tokens,
+            use_hf_tokenizer=use_hf_tokenizer,
         )
 
     def _split(self, documents: list) -> list[Chunk]:
