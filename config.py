@@ -15,9 +15,6 @@ CHROMA_PERSIST_DIR = PROJECT_ROOT / "chroma_db"
 CHUNK_SIZE_TOKENS = 512
 CHUNK_OVERLAP_TOKENS = 256
 SECTION_MAX_TOKENS = 1024
-# Approximation tokens → caractères (évite le chargement du tokenizer HF au démarrage)
-CHARS_PER_TOKEN = 4
-USE_HF_TOKENIZER = False
 PAGE_RENDER_DPI = 150
 
 JINA_MODEL = "jinaai/jina-embeddings-v4"

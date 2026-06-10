@@ -5,15 +5,15 @@ Indexation et recherche ChromaDB.
 import time
 import uuid
 
+import chromadb
+from chromadb.config import Settings
+
 from chunkers.base import Chunk
 from config import CHROMA_PERSIST_DIR, TOP_K
 
 
 class ChromaManager:
     def __init__(self, persist_directory: str | None = None) -> None:
-        import chromadb
-        from chromadb.config import Settings
-
         path = persist_directory or str(CHROMA_PERSIST_DIR)
         self._client = chromadb.PersistentClient(
             path=path,

@@ -9,6 +9,7 @@ from typing import Any, Protocol
 
 import numpy as np
 from PIL import Image
+from sentence_transformers import SentenceTransformer
 
 from chunkers.base import Chunk
 from config import JINA_MODEL
@@ -63,7 +64,6 @@ class JinaEmbeddingProvider:
         batch_size: int = 4,
     ) -> None:
         import torch
-        from sentence_transformers import SentenceTransformer
 
         if device is None:
             if torch.cuda.is_available():

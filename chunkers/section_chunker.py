@@ -6,7 +6,11 @@ Chaque chunk est enrichi avec les images des pages PDF correspondantes.
 import re
 
 from chunkers.base import BaseChunker, Chunk
-from chunkers.splitter_utils import create_recursive_splitter, estimate_tokens
+from chunkers.text_splitter import (
+    chars_for_tokens,
+    count_tokens_approx,
+    recursive_split_text,
+)
 from config import (
     CHUNK_OVERLAP_TOKENS,
     CHUNK_SIZE_TOKENS,
@@ -73,14 +77,10 @@ class SectionChunker(BaseChunker):
         max_section_tokens: int = SECTION_MAX_TOKENS,
         chunk_size_tokens: int = CHUNK_SIZE_TOKENS,
         chunk_overlap_tokens: int = CHUNK_OVERLAP_TOKENS,
-        use_hf_tokenizer: bool | None = None,
     ) -> None:
-        self.max_section_tokens = max_section_tokens
-        self._fallback_splitter = create_recursive_splitter(
-            chunk_size_tokens=chunk_size_tokens,
-            chunk_overlap_tokens=chunk_overlap_tokens,
-            use_hf_tokenizer=use_hf_tokenizer,
-        )
+        self._max_section_chars = chars_for_tokens(max_section_tokens)
+        self._chunk_size = chars_for_tokens(chunk_size_tokens)
+        self._chunk_overlap = chars_for_tokens(chunk_overlap_tokens)
 
     def _split(self, documents: list) -> list[Chunk]:
         all_chunks: list[Chunk] = []
@@ -100,8 +100,8 @@ class SectionChunker(BaseChunker):
             doc_chunks: list[Chunk] = []
 
             for section_title, section_content in sections:
-                section_tokens = estimate_tokens(section_content)
-                if section_tokens <= self.max_section_tokens:
+                section_tokens = count_tokens_approx(section_content)
+                if section_tokens * 4 <= self._max_section_chars:
                     doc_chunks.append(
                         Chunk(
                             content=f"{section_title}\n\n{section_content}",
@@ -115,7 +115,9 @@ class SectionChunker(BaseChunker):
                     )
                     global_index += 1
                 else:
-                    sub_texts = self._fallback_splitter.split_text(section_content)
+                    sub_texts = recursive_split_text(
+                        section_content, self._chunk_size, self._chunk_overlap
+                    )
                     for j, sub_text in enumerate(sub_texts):
                         doc_chunks.append(
                             Chunk(

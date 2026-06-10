@@ -1,16 +1,16 @@
 """
-Chunking récursif via RecursiveCharacterTextSplitter (LangChain).
+Chunking récursif par caractères.
 Chaque chunk est enrichi avec les images des pages PDF correspondantes.
 """
 
 from chunkers.base import BaseChunker, Chunk
-from chunkers.splitter_utils import create_recursive_splitter
+from chunkers.text_splitter import chars_for_tokens, recursive_split_text
 from config import CHUNK_OVERLAP_TOKENS, CHUNK_SIZE_TOKENS
 from utils.pdf_document import PdfDocument, attach_images_to_chunks
 
 
 class RecursiveChunker(BaseChunker):
-    """Découpage récursif par tokens avec chevauchement + images de pages."""
+    """Découpage récursif avec chevauchement + images de pages."""
 
     name = "recursive"
 
@@ -18,13 +18,9 @@ class RecursiveChunker(BaseChunker):
         self,
         chunk_size_tokens: int = CHUNK_SIZE_TOKENS,
         chunk_overlap_tokens: int = CHUNK_OVERLAP_TOKENS,
-        use_hf_tokenizer: bool | None = None,
     ) -> None:
-        self._splitter = create_recursive_splitter(
-            chunk_size_tokens=chunk_size_tokens,
-            chunk_overlap_tokens=chunk_overlap_tokens,
-            use_hf_tokenizer=use_hf_tokenizer,
-        )
+        self._chunk_size = chars_for_tokens(chunk_size_tokens)
+        self._chunk_overlap = chars_for_tokens(chunk_overlap_tokens)
 
     def _split(self, documents: list) -> list[Chunk]:
         all_chunks: list[Chunk] = []
@@ -40,7 +36,9 @@ class RecursiveChunker(BaseChunker):
                 content = doc["content"]
                 pdf_doc = None
 
-            sub_texts = self._splitter.split_text(content)
+            sub_texts = recursive_split_text(
+                content, self._chunk_size, self._chunk_overlap
+            )
             doc_chunks: list[Chunk] = []
 
             for j, sub_text in enumerate(sub_texts):
