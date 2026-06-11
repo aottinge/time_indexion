@@ -6,11 +6,7 @@ Chaque chunk est enrichi avec les images des pages PDF correspondantes.
 import re
 
 from chunkers.base import BaseChunker, Chunk
-from chunkers.text_splitter import (
-    chars_for_tokens,
-    count_tokens_approx,
-    recursive_split_text,
-)
+from chunkers.text_splitter import chars_for_tokens, recursive_split_text
 from config import (
     CHUNK_OVERLAP_TOKENS,
     CHUNK_SIZE_TOKENS,
@@ -100,8 +96,7 @@ class SectionChunker(BaseChunker):
             doc_chunks: list[Chunk] = []
 
             for section_title, section_content in sections:
-                section_tokens = count_tokens_approx(section_content)
-                if section_tokens * 4 <= self._max_section_chars:
+                if len(section_content) <= self._max_section_chars:
                     doc_chunks.append(
                         Chunk(
                             content=f"{section_title}\n\n{section_content}",

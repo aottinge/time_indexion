@@ -1,0 +1,11 @@
+# Dépendances optionnelles — installer seulement si besoin :
+#   pip install -r requirements-optional.txt
+
+# OCR pour PDF scannés (nécessite aussi : brew install tesseract)
+pytesseract>=0.3.10
+
+# Graphique PNG du benchmark
+matplotlib>=3.8.0
+
+# Export Excel du benchmark
+openpyxl>=3.1.0

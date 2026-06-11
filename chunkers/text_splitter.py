@@ -6,7 +6,7 @@ _DEFAULT_SEPARATORS = ["\n\n", "\n", ". ", " ", ""]
 
 
 def chars_for_tokens(tokens: int, chars_per_token: int = 4) -> int:
-    """Approximation tokens → caractères (1 token ≈ 4 caractères en français/anglais)."""
+    """Approximation tokens → caractères (1 token ≈ 4 caractères)."""
     return max(1, tokens * chars_per_token)
 
 
